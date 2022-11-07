@@ -6,7 +6,7 @@ plugins {
 
 ext {
     slf4jVersion = '1.7.36'
-    kotestVersion = '5.3.0'
+    kotestVersion = '5.5.4'
     mockkVersion = '1.12.4'
     logbackVersion = '1.2.11'
 }
@@ -27,4 +27,8 @@ dependencies {
     testImplementation "io.kotest:kotest-property:$kotestVersion"
     testImplementation "io.mockk:mockk:$mockkVersion"
     testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+test {
+    useJUnitPlatform()
 }
