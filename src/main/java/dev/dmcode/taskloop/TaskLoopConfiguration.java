@@ -1,10 +1,6 @@
 package dev.dmcode.taskloop;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Value;
-import lombok.With;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.time.Duration;
@@ -39,20 +35,14 @@ public class TaskLoopConfiguration {
         Duration taskInterval,
         Duration executorTerminationTimeout
     ) {
-        if (Objects.isNull(name)) {
-            throw new IllegalArgumentException("Name must not be null");
-        }
-        if (Objects.isNull(task)) {
-            throw new IllegalArgumentException("Task must not be null");
-        }
         if (Objects.nonNull(taskInterval) && taskInterval.isNegative()) {
             throw new IllegalArgumentException("Task interval must not be negative");
         }
         if (Objects.nonNull(executorTerminationTimeout) && executorTerminationTimeout.isNegative()) {
             throw new IllegalArgumentException("Executor termination timeout must not be negative");
         }
-        this.name = name;
-        this.task = task;
+        this.name = Objects.requireNonNull(name, "Name must not be null");
+        this.task = Objects.requireNonNull(task, "Task must not be null");
         this.taskInterval = Optional.ofNullable(taskInterval)
             .orElse(DEFAULT_TASK_INTERVAL);
         this.executorTerminationTimeout = Optional.ofNullable(executorTerminationTimeout)

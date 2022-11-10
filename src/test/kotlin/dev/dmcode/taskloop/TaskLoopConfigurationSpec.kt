@@ -23,13 +23,13 @@ class TaskLoopConfigurationSpec : StringSpec({
     }
 
     "Should throw on null name" {
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<NullPointerException> {
             TaskLoopConfiguration(null, {})
         }.message shouldBe "Name must not be null"
     }
 
     "Should throw on null task" {
-        shouldThrow<IllegalArgumentException> {
+        shouldThrow<NullPointerException> {
             TaskLoopConfiguration("test", null)
         }.message shouldBe "Task must not be null"
     }
