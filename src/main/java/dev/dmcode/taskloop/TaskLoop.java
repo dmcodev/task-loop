@@ -3,14 +3,18 @@ package dev.dmcode.taskloop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TaskLoop implements TaskLoopLifecycle {
 
     private final Lock lock = new ReentrantLock();
+    private final Condition wakeupCondition = lock.newCondition();
 
     private final TaskLoopConfiguration configuration;
     private final Logger logger;
@@ -64,17 +68,35 @@ public class TaskLoop implements TaskLoopLifecycle {
         var task = configuration.task();
         while (running) {
             try {
-                task.run();
+                switch (task.call()) {
+                    case DefaultTaskResult ignored -> sleep(configuration.taskInterval());
+                    case SleepTaskResult sleep -> sleep(sleep.duration());
+                }
             } catch (Exception exception) {
                 if (running) {
-                    logger.error("Task exception", exception);
+                    logger.error("Task invocation exception", exception);
                 }
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void sleep(Duration duration) {
+        long sleepMilliseconds = duration.toMillis();
+        if (sleepMilliseconds == 0) {
+            return;
+        }
+        lock.lock();
+        try {
+            if (running) {
+                wakeupCondition.await(sleepMilliseconds, TimeUnit.MILLISECONDS);
             }
+        } catch (InterruptedException exception) {
+            if (running) {
+                logger.warn("Sleep between task invocations interrupted", exception);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 }

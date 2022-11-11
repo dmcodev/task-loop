@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @With
@@ -21,17 +22,17 @@ public class TaskLoopConfiguration {
     AtomicInteger nextThreadNumber = new AtomicInteger(1);
 
     String name;
-    Runnable task;
+    Callable<TaskResult> task;
     Duration taskInterval;
     Duration executorTerminationTimeout;
 
-    public TaskLoopConfiguration(String name, Runnable task) {
+    public TaskLoopConfiguration(String name, Callable<TaskResult> task) {
         this(name, task, null, null);
     }
 
     public TaskLoopConfiguration(
         String name,
-        Runnable task,
+        Callable<TaskResult> task,
         Duration taskInterval,
         Duration executorTerminationTimeout
     ) {
