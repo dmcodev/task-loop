@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -42,7 +43,7 @@ public class TaskLoop implements TaskLoopLifecycle {
     }
 
     @Override
-    public boolean stop() {
+    public Optional<TaskLoopStopFuture> stop() {
         Thread stoppingThread = null;
         lock.lock();
         try {
@@ -55,7 +56,8 @@ public class TaskLoop implements TaskLoopLifecycle {
         } finally {
             lock.unlock();
         }
-        return Objects.nonNull(stoppingThread);
+        return Optional.ofNullable(stoppingThread)
+            .map(TaskLoopStopFuture.ThreadJoin::new);
     }
 
     private void run() {

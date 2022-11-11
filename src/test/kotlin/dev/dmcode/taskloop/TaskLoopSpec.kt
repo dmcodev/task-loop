@@ -5,16 +5,14 @@ import io.kotest.matchers.shouldBe
 
 class TaskLoopSpec : StringSpec({
 
-    "Should start and stop loop multiple times" {
+    "Should start and stop multiple times" {
         val configuration = TaskLoopConfiguration("test") {}
-        repeat(3) {
-            TaskLoop(configuration).apply {
-                start()
-                stop() shouldBe true
-                stop() shouldBe false
-                start()
-                stop() shouldBe true
-            }
+        TaskLoop(configuration).apply {
+            start()
+            stop().get().await(5000) shouldBe true
+            stop().isPresent shouldBe false
+            start()
+            stop().get().await(5000) shouldBe true
         }
     }
 })
