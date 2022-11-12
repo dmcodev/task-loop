@@ -6,6 +6,7 @@ import java.time.Duration
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 class TaskLoopSpec : StringSpec({
 
@@ -45,6 +46,26 @@ class TaskLoopSpec : StringSpec({
         TaskLoop(configuration).apply {
             start()
             counterLatch.await(5, TimeUnit.SECONDS) shouldBe true
+            stop().get().await(5000) shouldBe true
+        }
+    }
+
+    "Should handle exception" {
+        val counterLatch = CountDownLatch(2)
+        val exceptionThrown = AtomicBoolean()
+        val task = Callable {
+            counterLatch.countDown()
+            if (exceptionThrown.compareAndSet(false, true)) {
+                throw RuntimeException("Failure")
+            }
+            TaskResult.ok()
+        }
+        val configuration = TaskLoopConfiguration("test", task)
+            .withTaskInterval(Duration.ofMillis(10))
+        TaskLoop(configuration).apply {
+            start()
+            counterLatch.await(5, TimeUnit.SECONDS) shouldBe true
+            exceptionThrown.get() shouldBe true
             stop().get().await(5000) shouldBe true
         }
     }

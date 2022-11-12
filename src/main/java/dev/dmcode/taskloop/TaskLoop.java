@@ -85,6 +85,7 @@ public class TaskLoop implements TaskLoopLifecycle {
                 if (running) {
                     logger.error("Task invocation exception", exception);
                 }
+                sleep(configuration.taskInterval());
             }
         }
     }
