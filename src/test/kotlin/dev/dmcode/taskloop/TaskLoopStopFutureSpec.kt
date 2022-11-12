@@ -8,7 +8,8 @@ import io.kotest.matchers.throwable.shouldHaveMessage
 class TaskLoopStopFutureSpec : StringSpec({
 
     listOf(
-        TaskLoopStopFuture.ThreadJoin(Thread {})
+        TaskLoopStopFuture.ThreadJoin(Thread {}),
+        TaskLoopStopFuture.Group(listOf())
     ).forEach {
         "Should reject negative await timeout in ${it.javaClass.simpleName}" {
             shouldThrow<IllegalArgumentException> { it.await(-1) }
