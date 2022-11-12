@@ -20,6 +20,20 @@ class TaskLoopSpec : StringSpec({
         }
     }
 
+    "Should stop while sleeping between task invocations" {
+        val task = Callable {
+            TaskResult.ok()
+        }
+        val configuration = TaskLoopConfiguration("test", task)
+            .withTaskInterval(Duration.ofHours(1))
+        TaskLoop(configuration).apply {
+            start()
+            Thread.sleep(100)
+            stop().get().await(5000) shouldBe true
+        }
+    }
+
+
     "Should run loop with small task interval" {
         val counterLatch = CountDownLatch(2)
         val task = Callable {
@@ -59,6 +73,23 @@ class TaskLoopSpec : StringSpec({
         val configuration = TaskLoopConfiguration("test", task)
         TaskLoop(configuration).apply {
             start()
+            counterLatch.await(5, TimeUnit.SECONDS) shouldBe true
+            stop().get().await(5000) shouldBe true
+        }
+    }
+
+    "Should wakeup" {
+        val counterLatch = CountDownLatch(2)
+        val task = Callable {
+            counterLatch.countDown()
+            TaskResult.ok()
+        }
+        val configuration = TaskLoopConfiguration("test", task)
+            .withTaskInterval(Duration.ofHours(1))
+        TaskLoop(configuration).apply {
+            start()
+            Thread.sleep(100)
+            wakeup()
             counterLatch.await(5, TimeUnit.SECONDS) shouldBe true
             stop().get().await(5000) shouldBe true
         }

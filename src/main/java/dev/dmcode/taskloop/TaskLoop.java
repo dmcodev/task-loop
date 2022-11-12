@@ -21,6 +21,7 @@ public class TaskLoop implements TaskLoopLifecycle {
 
     private volatile boolean running;
     private Thread thread;
+    private boolean wakeupRequested;
 
     public TaskLoop(TaskLoopConfiguration configuration) {
         this.configuration = Objects.requireNonNull(configuration, "Configuration must not be null");
@@ -43,7 +44,15 @@ public class TaskLoop implements TaskLoopLifecycle {
 
     @Override
     public void wakeup() {
-
+        lock.lock();
+        try {
+            if (running) {
+                wakeupRequested = true;
+                wakeupCondition.signal();
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -88,7 +97,7 @@ public class TaskLoop implements TaskLoopLifecycle {
         }
         lock.lock();
         try {
-            if (running) {
+            if (running && !wakeupRequested) {
                 wakeupCondition.await(sleepMilliseconds, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException exception) {
@@ -96,6 +105,7 @@ public class TaskLoop implements TaskLoopLifecycle {
                 logger.warn("Sleep between task invocations interrupted", exception);
             }
         } finally {
+            wakeupRequested = false;
             lock.unlock();
         }
     }
