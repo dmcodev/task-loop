@@ -29,8 +29,6 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib"
     testImplementation "io.kotest:kotest-runner-junit5:$kotestVersion"
     testImplementation "io.kotest:kotest-assertions-core:$kotestVersion"
-    testImplementation "io.kotest:kotest-framework-datatest:$kotestVersion"
-    testImplementation "io.kotest:kotest-property:$kotestVersion"
     testImplementation "io.mockk:mockk:$mockkVersion"
     testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
 }
@@ -47,4 +45,17 @@ tasks.withType(Test) {
 }
 tasks.withType(JavaExec) {
     jvmArgs += "--enable-preview"
+}
+
+tasks.register('examplesTest', Test) {
+    useJUnitPlatform()
+    shouldRunAfter(tasks.named('test'))
+    systemProperty 'run.examples.test', 'true'
+    filter {
+        includeTestsMatching "*ExamplesSpec*"
+    }
+}
+
+tasks.named('check') {
+    dependsOn('examplesTest')
 }
