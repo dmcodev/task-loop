@@ -3,7 +3,6 @@ package dev.dmcode.taskloop
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import java.time.Duration
-import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -11,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class TaskLoopSpec : StringSpec({
 
     "Should start and stop multiple times" {
-        val configuration = TaskLoopConfiguration("test") { TaskResult.ok() }
+        val configuration = TaskLoopConfiguration("test") { Task.Result.ok() }
         TaskLoop(configuration).apply {
             start()
             stop().get().await(5000) shouldBe true
@@ -22,8 +21,8 @@ class TaskLoopSpec : StringSpec({
     }
 
     "Should stop while sleeping between task invocations" {
-        val task = Callable {
-            TaskResult.ok()
+        val task = Task {
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
             .withTaskInterval(Duration.ofHours(1))
@@ -37,9 +36,9 @@ class TaskLoopSpec : StringSpec({
 
     "Should run loop with small task interval" {
         val counterLatch = CountDownLatch(2)
-        val task = Callable {
+        val task = Task {
             counterLatch.countDown()
-            TaskResult.ok()
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
             .withTaskInterval(Duration.ofMillis(25))
@@ -53,12 +52,12 @@ class TaskLoopSpec : StringSpec({
     "Should handle exception" {
         val counterLatch = CountDownLatch(2)
         val exceptionThrown = AtomicBoolean()
-        val task = Callable {
+        val task = Task {
             counterLatch.countDown()
             if (exceptionThrown.compareAndSet(false, true)) {
                 throw RuntimeException("Failure")
             }
-            TaskResult.ok()
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
             .withTaskInterval(Duration.ofMillis(10))
@@ -72,9 +71,9 @@ class TaskLoopSpec : StringSpec({
 
     "Should run busy loop configured with zero task interval" {
         val counterLatch = CountDownLatch(100)
-        val task = Callable {
+        val task = Task {
             counterLatch.countDown()
-            TaskResult.ok()
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
             .withTaskInterval(Duration.ZERO)
@@ -87,9 +86,9 @@ class TaskLoopSpec : StringSpec({
 
     "Should run busy loop using repeat result" {
         val counterLatch = CountDownLatch(100)
-        val task = Callable {
+        val task = Task {
             counterLatch.countDown()
-            TaskResult.repeat()
+            Task.Result.repeat()
         }
         val configuration = TaskLoopConfiguration("test", task)
         TaskLoop(configuration).apply {
@@ -101,9 +100,9 @@ class TaskLoopSpec : StringSpec({
 
     "Should wakeup" {
         val counterLatch = CountDownLatch(2)
-        val task = Callable {
+        val task = Task {
             counterLatch.countDown()
-            TaskResult.ok()
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
             .withTaskInterval(Duration.ofHours(1))

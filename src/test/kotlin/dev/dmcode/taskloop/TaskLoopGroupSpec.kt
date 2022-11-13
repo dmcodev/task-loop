@@ -3,7 +3,6 @@ package dev.dmcode.taskloop
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import java.time.Duration
-import java.util.concurrent.Callable
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
@@ -12,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class TaskLoopGroupSpec : StringSpec({
 
     "Should start and stop multiple times" {
-        val configuration = TaskLoopConfiguration("test") { TaskResult.ok() }
+        val configuration = TaskLoopConfiguration("test") { Task.Result.ok() }
         TaskLoopGroup(configuration, 4).apply {
             start()
             stop().get().await(5000) shouldBe true
@@ -25,10 +24,10 @@ class TaskLoopGroupSpec : StringSpec({
     "Should run simple loop group" {
         val groupBarrier = CyclicBarrier(5)
         val threadNames = CopyOnWriteArrayList<String>()
-        val task = Callable {
+        val task = Task {
             threadNames.add(Thread.currentThread().name)
             groupBarrier.await()
-            TaskResult.ok()
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
         TaskLoopGroup(configuration, 4).apply {
@@ -42,10 +41,10 @@ class TaskLoopGroupSpec : StringSpec({
     "Should wakeup" {
         val groupBarrier = CyclicBarrier(4)
         val counterLatch = CountDownLatch(2)
-        val task = Callable {
+        val task = Task {
             counterLatch.countDown()
             groupBarrier.await()
-            TaskResult.ok()
+            Task.Result.ok()
         }
         val configuration = TaskLoopConfiguration("test", task)
             .withTaskInterval(Duration.ofHours(1))

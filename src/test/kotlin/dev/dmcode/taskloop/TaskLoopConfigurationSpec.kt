@@ -4,16 +4,15 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import java.time.Duration
-import java.util.concurrent.Callable
 
 class TaskLoopConfigurationSpec : StringSpec({
 
-    val task = Callable { TaskResult.ok() }
+    val task = Task { Task.Result.ok() }
 
     "Should create configuration with default values" {
         TaskLoopConfiguration("test", task).apply {
             name() shouldBe "test"
-            task().call() shouldBe TaskResult.ok()
+            task() shouldBe task
             taskInterval() shouldBe Duration.ofSeconds(5)
         }
     }

@@ -1,5 +1,6 @@
 package dev.dmcode.taskloop;
 
+import dev.dmcode.taskloop.Task.ExecutionOrigin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ public class TaskLoop implements TaskLoopLifecycle {
     private volatile boolean running;
     private Thread thread;
     private boolean wakeupRequested;
+    private ExecutionOrigin executionOrigin = ExecutionOrigin.SCHEDULED;
 
     public TaskLoop(TaskLoopConfiguration configuration) {
         this.configuration = Objects.requireNonNull(configuration, "Configuration must not be null");
@@ -77,7 +79,8 @@ public class TaskLoop implements TaskLoopLifecycle {
         var task = configuration.task();
         while (running) {
             try {
-                switch (task.call()) {
+                var context = new Task.Context(executionOrigin); // TODO: reduce garbage
+                switch (task.run(context)) {
                     case DefaultTaskResult ignored -> sleep(configuration.taskInterval());
                     case SleepTaskResult sleep -> sleep(sleep.duration());
                 }
@@ -106,6 +109,7 @@ public class TaskLoop implements TaskLoopLifecycle {
                 logger.warn("Sleep between task invocations interrupted", exception);
             }
         } finally {
+            executionOrigin = wakeupRequested ? ExecutionOrigin.WOKEN_UP : ExecutionOrigin.SCHEDULED;
             wakeupRequested = false;
             lock.unlock();
         }
