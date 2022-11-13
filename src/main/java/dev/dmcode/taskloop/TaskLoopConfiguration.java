@@ -1,6 +1,10 @@
 package dev.dmcode.taskloop;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+import lombok.With;
 import lombok.experimental.Accessors;
 
 import java.time.Duration;

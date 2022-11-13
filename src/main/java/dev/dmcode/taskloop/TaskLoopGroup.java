@@ -29,13 +29,13 @@ public class TaskLoopGroup implements TaskLoopLifecycle {
 
     @Override
     public Optional<TaskLoopStopFuture> stop() {
-        var stopFutures = taskLoops.stream()
+        var futures = taskLoops.stream()
             .map(TaskLoop::stop)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .toList();
-        return (stopFutures.size() == taskLoops.size())
-            ? Optional.of(new TaskLoopStopFuture.Group(stopFutures))
+        return futures.size() > 0
+            ? Optional.of(new TaskLoopStopFuture.Group(futures))
             : Optional.empty();
     }
 }
