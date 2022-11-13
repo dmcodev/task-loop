@@ -9,7 +9,8 @@ class ExamplesSpec : StringSpec({
 
     listOf<KClass<*>>(
         SimpleExample::class,
-        RandomWakeupExample::class
+        RandomWakeupExample::class,
+        GroupExample::class
     ).forEach {
         "Example should run and complete: ${it.simpleName}".config(enabled = enabled) {
             it.java.getMethod("main", arrayOf<String>()::class.java)
