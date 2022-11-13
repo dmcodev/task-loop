@@ -15,13 +15,12 @@ class TaskLoopConfigurationSpec : StringSpec({
             name() shouldBe "test"
             task().call() shouldBe TaskResult.ok()
             taskInterval() shouldBe Duration.ofSeconds(5)
-            executorTerminationTimeout() shouldBe Duration.ofMinutes(1)
         }
     }
 
     "Null constructor parameters should be replaced by default values" {
         TaskLoopConfiguration("test", task) shouldBe
-            TaskLoopConfiguration("test", task, null, null)
+            TaskLoopConfiguration("test", task, null)
     }
 
     "Should throw on null name" {
@@ -41,13 +40,6 @@ class TaskLoopConfigurationSpec : StringSpec({
             TaskLoopConfiguration("test", task)
                 .withTaskInterval(Duration.ofMillis(1).negated())
         }.message shouldBe "Task interval must not be negative"
-    }
-
-    "Should throw on negative executor termination timeout" {
-        shouldThrow<IllegalArgumentException> {
-            TaskLoopConfiguration("test", task)
-                .withExecutorTerminationTimeout(Duration.ofMillis(1).negated())
-        }.message shouldBe "Executor termination timeout must not be negative"
     }
 
     "Should build a thread name with increasing thread number" {
