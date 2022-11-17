@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
     id 'org.jetbrains.kotlin.jvm' version '1.7.21'
     id 'io.freefair.lombok' version '6.1.0'
 }
@@ -12,7 +13,7 @@ ext {
 }
 
 group 'dev.dmcode'
-version '1.0-SNAPSHOT'
+version '0.1'
 
 java {
     toolchain {
@@ -40,9 +41,11 @@ test {
 tasks.withType(JavaCompile) {
     options.compilerArgs += "--enable-preview"
 }
+
 tasks.withType(Test) {
     jvmArgs += "--enable-preview"
 }
+
 tasks.withType(JavaExec) {
     jvmArgs += "--enable-preview"
 }
@@ -58,4 +61,22 @@ tasks.register('examplesTest', Test) {
 
 tasks.named('check') {
     dependsOn('examplesTest')
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/dmcodev/task-loop")
+            credentials {
+                username = project.findProperty("gpr.user")
+                password = project.findProperty("gpr.key")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
 }
